@@ -61,7 +61,7 @@ public class CarListingTest {
     public void testNumberOfPricesAboveZero() {
         driver.get(CRAIGSLIST_LINK);
 
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
 
         List<WebElement> carList = driver.findElements(By.cssSelector("#search-results-page-1 > ol > li"));
 
@@ -81,7 +81,7 @@ public class CarListingTest {
     public void testSQLiteAddition() throws SQLException, InterruptedException {
         driver.get(CRAIGSLIST_LINK);
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
         List<WebElement> carList = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("#search-results-page-1 > ol > li")));
 

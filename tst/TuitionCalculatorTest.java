@@ -84,11 +84,11 @@ public class TuitionCalculatorTest {
 
         WebElement userID = driver.findElement(By.name("sid"));
         userID.clear();
-        userID.sendKeys("900233241");
+        userID.sendKeys(Credentials.ID);
 
         WebElement pin = driver.findElement(By.name("PIN"));
         pin.clear();
-        pin.sendKeys("13141516");
+        pin.sendKeys(Credentials.PIN);
 
         WebElement login = driver.findElement(By.cssSelector("body > div.pagebodydiv > form > p > input[type=submit]"));
         login.click();

@@ -1,8 +1,5 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -128,5 +125,13 @@ public class TuitionCalculatorTest {
         // Can use this test as a purposeful fail to double-check the amounts do not match
 //        Assert.assertEquals("Should return false because my tuition does not match" +
 //                "the website's amount",5262.00, tuitionAmount*2, 0);
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        // Closes all windows
+        driver.close();
+        driver.quit();
+        driver = null;
     }
 }

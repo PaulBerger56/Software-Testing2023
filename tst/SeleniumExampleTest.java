@@ -1,14 +1,13 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+
+import java.sql.SQLException;
 import java.time.Duration;
 
 
@@ -106,8 +105,14 @@ public class SeleniumExampleTest {
 
         WebElement submitButton = driver.findElement(By.cssSelector("#main > div.page__content > div > div.Step1Form__Wrapper-sc-giuvmq-0.iVjcDa > form > div.enrollment_1__actions > button"));
         submitButton.click();
+    }
 
-
+    @AfterClass
+    public static void tearDown() {
+        // Closes all windows
+        driver.close();
+        driver.quit();
+        driver = null;
     }
 }
 

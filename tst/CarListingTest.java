@@ -22,7 +22,7 @@ public class CarListingTest {
     private static Connection connection;
 
     @BeforeClass
-    public static void setUp() throws SQLException {
+    public static void setUp() {
         ChromeOptions option = new ChromeOptions();
         option.addArguments("--remote-allow-origins=*");
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
@@ -73,7 +73,7 @@ public class CarListingTest {
 
         System.out.println("Number of cars above $0.00 " + aboveZero);
         // There is almost always at least one car missing a price, so we will use this test
-        Assert.assertFalse(aboveZero == 120);
+        Assert.assertNotEquals(120, aboveZero);
     }
 
 
@@ -220,6 +220,8 @@ public class CarListingTest {
         }
 
         // Closes all windows
+        driver.close();
         driver.quit();
+        driver = null;
     }
 }

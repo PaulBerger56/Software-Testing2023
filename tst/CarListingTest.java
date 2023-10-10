@@ -92,9 +92,9 @@ public class CarListingTest {
             // isElementPresent is used to check if the element exists or not and allows the program to continue
             // rather than crash if it is missing
             String priceString = "0";
-            String subjectString = "";
-            String urlString = "";
-            String retrievalTimeString = "";
+            String subjectString = "N/A";
+            String urlString = "N/A";
+            String retrievalTimeString = "N/A";
 
             if(isElementPresent(car, "label")) {
                 WebElement subject = car.findElement(By.className("label"));
@@ -145,6 +145,18 @@ public class CarListingTest {
                         "retrieval_time TEXT)"
         );
         statement.close();
+
+        Statement table2 = connection.createStatement();
+        table2.execute(
+                "CREATE TABLE IF NOT EXISTS specific_cars (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        "brand TEXT," +
+                        "subject TEXT," +
+                        "price REAL," +
+                        "url TEXT," +
+                        "retrieval_time TEXT)"
+        );
+        table2.close();
     }
 
     private void insertCarListing(String subject, double price, String url, String retrievalTime) {

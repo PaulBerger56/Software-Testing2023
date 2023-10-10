@@ -134,6 +134,35 @@ public class CarListingTest {
     }
 
 
+    // Thank you ChatGPT!!!!!
+    // Could not figure out how to make it work with joins, but used insert instead
+    @Test
+    public void testAddSpecificCars() throws SQLException {
+        // Define the brand names to search for
+        String[] targetBrands = {"Ford", "Chevrolet", "Toyota"};
+
+        // Create an SQL query to insert matching records into specific_cars
+        String sql = "INSERT INTO specific_cars (brand, subject, price, url, retrieval_time) " +
+                "SELECT ?, cl.subject, cl.price, cl.url, cl.retrieval_time " +
+                "FROM car_listings AS cl " +
+                "WHERE LOWER(cl.subject) LIKE ? OR LOWER(cl.subject) LIKE ? OR LOWER(cl.subject) LIKE ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            for (int i = 0; i < targetBrands.length; i++) {
+                String targetBrand = targetBrands[i];
+                preparedStatement.setString(1, targetBrand);
+                for (int j = 2; j <= 4; j++) {
+                    preparedStatement.setString(j, "%" + targetBrand.toLowerCase() + "%");
+                }
+                int rowsInserted = preparedStatement.executeUpdate();
+
+                System.out.println(rowsInserted + " rows inserted into specific_cars for brand: " + targetBrand);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void initializeDatabase() throws SQLException {
         Statement statement = connection.createStatement();
         statement.execute(

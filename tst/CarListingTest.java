@@ -85,12 +85,6 @@ public class CarListingTest {
 
         List<WebElement> carList = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("#search-results-page-1 > ol > li")));
 
-        try {
-            connection = DriverManager.getConnection("jdbc:sqlite:car_listings.db");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
         int previousRowCount = getDBCount(connection);
 
         for (WebElement car : carList) {
@@ -197,7 +191,7 @@ public class CarListingTest {
                 String priceString = price.getText();
                 priceString = priceString.replace("$", "");
                 priceString = priceString.replace(",", "");
-                Double formattedPrice = Double.parseDouble(priceString);
+                double formattedPrice = Double.parseDouble(priceString);
 
                 if(formattedPrice >= 0.0) {
                     count++;

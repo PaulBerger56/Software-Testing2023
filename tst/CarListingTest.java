@@ -145,7 +145,8 @@ public class CarListingTest {
         String sql = "INSERT INTO specific_cars (brand, subject, price, url, retrieval_time) " +
                 "SELECT ?, cl.subject, cl.price, cl.url, cl.retrieval_time " +
                 "FROM car_listings AS cl " +
-                "WHERE LOWER(cl.subject) LIKE ? OR LOWER(cl.subject) LIKE ? OR LOWER(cl.subject) LIKE ?";
+                "WHERE (LOWER(cl.subject) LIKE ? OR LOWER(cl.subject) LIKE ? OR LOWER(cl.subject) LIKE ?)" +
+                " AND NOT EXISTS (SELECT 1 FROM specific_cars AS sc WHERE sc.subject = cl.subject AND sc.brand = ?)";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             for (int i = 0; i < targetBrands.length; i++) {
@@ -154,6 +155,8 @@ public class CarListingTest {
                 for (int j = 2; j <= 4; j++) {
                     preparedStatement.setString(j, "%" + targetBrand.toLowerCase() + "%");
                 }
+                preparedStatement.setString(5, targetBrand);
+
                 int rowsInserted = preparedStatement.executeUpdate();
 
                 System.out.println(rowsInserted + " rows inserted into specific_cars for brand: " + targetBrand);
@@ -200,6 +203,27 @@ public class CarListingTest {
             e.printStackTrace();
         }
     }
+
+    // This code adds the car listing only if it doesn't already exist in the db
+//    private void insertCarListing(String subject, double price, String url, String retrievalTime) {
+//        try (PreparedStatement preparedStatement = connection.prepareStatement(
+//                "INSERT INTO car_listings (subject, price, url, retrieval_time) " +
+//                        "SELECT ?, ?, ?, ? " +
+//                        "WHERE NOT EXISTS (SELECT 1 FROM car_listings WHERE subject = ?)")) {
+//            preparedStatement.setString(1, subject);
+//            preparedStatement.setDouble(2, price);
+//            preparedStatement.setString(3, url);
+//            preparedStatement.setString(4, retrievalTime);
+//            preparedStatement.setString(5, subject);
+//            int rowsInserted = preparedStatement.executeUpdate();
+//
+//            if (rowsInserted == 0) {
+//                System.out.println("Car listing with subject " + subject + " already exists (no new entry added)");
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     // Some of the cars are missing elements, so we check with this method and just move on
     // instead of crashing the code

@@ -1,4 +1,10 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.bouncycastle.oer.its.etsi102941.Url;
 import org.junit.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.WebDriver;
@@ -10,9 +16,16 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.NoSuchElementException;
 
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.sql.*;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
+
+import java.io.*;
+
+
+
 
 
 public class CarListingTest {
@@ -83,7 +96,8 @@ public class CarListingTest {
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
-        List<WebElement> carList = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("#search-results-page-1 > ol > li")));
+        List<WebElement> carList = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+                By.cssSelector("#search-results-page-1 > ol > li")));
 
         int previousRowCount = getDBCount(connection);
 
@@ -95,6 +109,7 @@ public class CarListingTest {
             String subjectString = "N/A";
             String urlString = "N/A";
             String retrievalTimeString = "N/A";
+            Blob img = null;
 
             if(isElementPresent(car, "label")) {
                 WebElement subject = car.findElement(By.className("label"));
@@ -166,6 +181,48 @@ public class CarListingTest {
         }
     }
 
+    @Test
+    public void testGrabImages() throws SQLException {
+        driver.get(CRAIGSLIST_LINK);
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+
+        List<WebElement> carList = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+                By.cssSelector("#search-results-page-1 > ol > li")));
+        List<Blob> images = new ArrayList<>();
+
+        System.out.println(carList.size());
+        for(WebElement car: carList) {
+            if(isElementPresent(car, "img")) {
+                List<WebElement> tempImages = car.findElements(By.tagName("img"));
+                if(!tempImages.isEmpty()) {
+                    for(WebElement w: tempImages) {
+                        if(w.getAttribute("src") != null){
+                            byte[] tempByte = getImageAsBlob(w.getAttribute("src"));
+                            Blob tempBlob = new SerialBlob(tempByte);
+                            images.add(tempBlob);
+                            System.out.println(tempBlob.toString());
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println(images.size());
+    }
+
+    public static byte[] getImageAsBlob(String imageUrl) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(imageUrl);
+            try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+                byte[] imageBytes = EntityUtils.toByteArray(response.getEntity());
+                return imageBytes;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private static void initializeDatabase() throws SQLException {
         Statement statement = connection.createStatement();
         statement.execute(
@@ -225,13 +282,22 @@ public class CarListingTest {
 //        }
 //    }
 
+
     // Some of the cars are missing elements, so we check with this method and just move on
     // instead of crashing the code
     private boolean isElementPresent(WebElement car, String elementName) {
-        try{
-            car.findElement(By.className(elementName));
-        } catch(NoSuchElementException e) {
-            return false;
+        if(elementName.equals("img")) {
+            try{
+                car.findElements(By.tagName("img"));
+            } catch(NoSuchElementException e) {
+                return false;
+            }
+        } else {
+            try {
+                car.findElement(By.className(elementName));
+            } catch (NoSuchElementException e) {
+                return false;
+            }
         }
         return true;
     }

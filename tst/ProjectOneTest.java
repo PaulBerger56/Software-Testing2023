@@ -56,6 +56,7 @@ public class ProjectOneTest {
     }
 
     // THIS IS THE MAIN TEST!!!!!!!!!
+    // All parameters "Cancun", "Las Vegas", "Denver", "Rome", "Milan", "Paris", "Madrid", "Amsterdam", "Singapore"
     @Test
     @Parameters({"Cancun", "Las Vegas", "Denver", "Rome", "Milan", "Paris", "Madrid", "Amsterdam", "Singapore"})
     public void mainProjectTest(String city) throws InterruptedException {

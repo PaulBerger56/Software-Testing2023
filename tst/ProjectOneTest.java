@@ -43,7 +43,8 @@ public class ProjectOneTest {
     public static void setUp() {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--remote-allow-origins=*");
-        options.addArguments("user-data-dir=C:/Users/paulb/AppData/Local/Google/Chrome/User Data");
+        // This user data option causes issues on other systems
+//        options.addArguments("user-data-dir=C:/Users/paulb/AppData/Local/Google/Chrome/User Data");
         options.addArguments("--disable-blink-features=AutomationControlled");
 //        options.addArguments("--headless");
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
@@ -90,6 +91,8 @@ public class ProjectOneTest {
             System.out.println();
             try {
                 driver.get(EXPEDIA);
+                // maximize the window because the page changes it's layout, divs, and names when it gets resized
+                driver.manage().window().maximize();
                 WebElement flightButton = driver.findElement(By.cssSelector("#multi-product-search-form-1 > div > div > div.uitk-tabs-container > ul > li:nth-child(2) > a"));
                 flightButton.click();
 

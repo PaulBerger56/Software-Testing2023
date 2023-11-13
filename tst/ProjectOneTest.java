@@ -62,13 +62,13 @@ public class ProjectOneTest {
         // Main method of the project.  Navigates the webpage and grabs the data
         mainPageActions(city);
 
-        try{
-            // Iterates through any dates that got an error so that we don't miss any
-            while(!flightsWithErrors.getTRAVEL_WEEKS().isEmpty()) {
+        // Iterates through any dates that got an error so that we don't miss any
+        while(!flightsWithErrors.getTRAVEL_WEEKS().isEmpty()) {
+            try {
                 runDatesThatHadErrors(city);
+            } catch (Exception e) {
+                System.out.println("Error adding fligths with errors to DB");
             }
-        } catch(Exception e){
-            System.out.println("Error adding fligths with errors to DB");
         }
 
 

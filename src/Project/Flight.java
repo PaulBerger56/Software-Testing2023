@@ -1,7 +1,5 @@
 package Project;
 
-import java.util.Date;
-
 public class Flight {
 
     private final String AIRLINE;

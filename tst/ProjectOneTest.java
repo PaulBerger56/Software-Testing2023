@@ -1,33 +1,25 @@
 import Project.DateHolder;
 import Project.Flight;
 import Project.Week;
-import java.sql.*;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.NoSuchElementException;
 
-import java.security.Key;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RunWith(JUnitParamsRunner.class)
 public class ProjectOneTest {
@@ -67,16 +59,15 @@ public class ProjectOneTest {
     @Test
     @Parameters({"Cancun", "Las Vegas", "Denver", "Rome", "Milan", "Paris", "Madrid", "Amsterdam", "Singapore"})
     public void mainProjectTest(String city) throws InterruptedException {
+        // Main method of the project.  Navigates the webpage and grabs the data
         mainPageActions(city);
 
-        for (Flight f : flightList) {
-            System.out.println(f.toString());
-        }
-
+        // Iterates through any dates that got an error so that we don't miss any
         while(!flightsWithErrors.getTRAVEL_WEEKS().isEmpty()) {
             runDatesThatHadErrors(city);
         }
 
+        // Adds the data saved in the arraylists to the actual database
         addFlightListToDB();
     }
 
@@ -210,7 +201,6 @@ public class ProjectOneTest {
         List<WebElement> firstMonthList = dayLists.get(0);
         List<WebElement> secondMonthList = dayLists.get(1);
 
-
         //The button does not have day information in it, so we have to save it with the separate label div which
         // has the day info that we can read and check
         List<WebElement[]> firstMonthButtonsAndLabels = new ArrayList<>();
@@ -268,26 +258,12 @@ public class ProjectOneTest {
         doneButton.click();
     }
 
-    // use this to test new webelements without having to run the whole program every time
-    @Test
-    public void specificThingTest() throws InterruptedException {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-        driver.get(EXPEDIA);
-        Thread.sleep(7000);
-
-        grabFlights("May", "May", 7, 14, "Singapore");
-
-        for(Flight f: flightList){
-            System.out.println(f.toString());
-        }
-
-    }
-
     public void grabFlights(String firstMonth, String secondMonth, int firstDay, int secondDay, String destination) throws InterruptedException {
         boolean isNonStop = false;
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
         wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"app-layer-base\"]/div[2]/div[3]/div/div/div[1]/fieldset/form/div")));
+
         //clicks the nonstop box if it is there and sets nonstop to true.
         WebElement filterBy = driver.findElement(By.xpath("//*[@id=\"app-layer-base\"]/div[2]/div[3]/div/div/div[1]/fieldset/form/div"));
         List<WebElement> stopTypes = filterBy.findElements(By.name("NUM_OF_STOPS"));

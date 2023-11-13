@@ -56,23 +56,26 @@ public class ProjectOneTest {
     }
 
     // THIS IS THE MAIN TEST!!!!!!!!!
+    // All parameters "Cancun", "Las Vegas", "Denver", "Rome", "Milan", "Paris", "Madrid", "Amsterdam", "Singapore"
     @Test
     @Parameters({"Cancun", "Las Vegas", "Denver", "Rome", "Milan", "Paris", "Madrid", "Amsterdam", "Singapore"})
     public void mainProjectTest(String city) throws InterruptedException {
         // Main method of the project.  Navigates the webpage and grabs the data
         mainPageActions(city);
+        // Add the flights that were grabbed successfully before moving on to the error list
+        addFlightListToDB();
 
         // Iterates through any dates that got an error so that we don't miss any
         while(!flightsWithErrors.getTRAVEL_WEEKS().isEmpty()) {
+            System.out.println("Number of errors to resolve: " + flightsWithErrors.getTRAVEL_WEEKS().size());
             try {
                 runDatesThatHadErrors(city);
             } catch (Exception e) {
-                System.out.println("Error adding fligths with errors to DB");
+                System.out.println("Error adding flights with errors to DB");
             }
         }
 
-
-        // Adds the data saved in the arraylists to the actual database
+        // Adds the data saved in the arraylists from the errors to the actual database
         addFlightListToDB();
     }
 
@@ -157,6 +160,8 @@ public class ProjectOneTest {
 
              // This is needed to allow the flights to load on the page
              Thread.sleep(6000);
+             // Pass the flights with errors to grabFlights which attempts to grab the data again and add it
+             // to flightLists
              grabFlights(w.getFIRST_MONTH(), w.getSECOND_MONTH(), w.getFIRST_DAY(), w.getSECOND_DAY(), city);
 
              // grabs the current week object and adds it to an arraylist so that we can remove succesfull dates
@@ -305,9 +310,9 @@ public class ProjectOneTest {
         }
     }
 
-    private boolean isElementPresentByClassName(WebElement element, String elementName) {
+    private boolean isElementPresentByClassName(WebElement element, String className) {
             try {
-                element.findElement(By.className(elementName));
+                element.findElement(By.className(className));
             } catch (NoSuchElementException e) {
                 return false;
             }
@@ -323,6 +328,7 @@ public class ProjectOneTest {
         return true;
     }
 
+    // Creates Database if it doesn't already exist
     private static void initializeDatabase() throws SQLException {
         Statement statement = connection.createStatement();
         statement.execute(
@@ -340,30 +346,34 @@ public class ProjectOneTest {
         statement.close();
     }
 
+    // Iterates through the flightlist and adds the flights to the database
     public void addFlightListToDB() {
-        for(Flight f: flightList) {
-            String priceString = f.getPRICE().replace("$", "").replace(",","");
-            int price = Integer.parseInt(priceString);
+        if(!flightList.isEmpty()) {
 
-            try(PreparedStatement preparedStatement = connection.prepareStatement(
-                    "INSERT INTO flights (airline, departure_city, destination_city, departure_date," +
-                            "return_date, price, nonstop, retrieval_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-            )) {
-                preparedStatement.setString(1, f.getAIRLINE());
-                preparedStatement.setString(2, f.getDEPARTURE_CITY());
-                preparedStatement.setString(3, f.getARRIVAL_CITY());
-                preparedStatement.setString(4, f.getLEAVING_DATE());
-                preparedStatement.setString(5, f.getRETURN_DATE());
-                preparedStatement.setInt(6, price);
-                preparedStatement.setString(7, String.valueOf(f.isNONSTOP()));
-                preparedStatement.setString(8, getCurrentTime());
-                preparedStatement.executeUpdate();
+            for(Flight f: flightList) {
+                String priceString = f.getPRICE().replace("$", "").replace(",","");
+                int price = Integer.parseInt(priceString);
 
-            } catch (SQLException e) {
-                e.printStackTrace();
+                try(PreparedStatement preparedStatement = connection.prepareStatement(
+                        "INSERT INTO flights (airline, departure_city, destination_city, departure_date," +
+                                "return_date, price, nonstop, retrieval_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                )) {
+                    preparedStatement.setString(1, f.getAIRLINE());
+                    preparedStatement.setString(2, f.getDEPARTURE_CITY());
+                    preparedStatement.setString(3, f.getARRIVAL_CITY());
+                    preparedStatement.setString(4, f.getLEAVING_DATE());
+                    preparedStatement.setString(5, f.getRETURN_DATE());
+                    preparedStatement.setInt(6, price);
+                    preparedStatement.setString(7, String.valueOf(f.isNONSTOP()));
+                    preparedStatement.setString(8, getCurrentTime());
+                    preparedStatement.executeUpdate();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
+            flightList.clear();
         }
-        flightList.clear();
     }
 
     // Gets the current date and time to add into the database

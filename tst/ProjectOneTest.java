@@ -62,10 +62,15 @@ public class ProjectOneTest {
         // Main method of the project.  Navigates the webpage and grabs the data
         mainPageActions(city);
 
-        // Iterates through any dates that got an error so that we don't miss any
-        while(!flightsWithErrors.getTRAVEL_WEEKS().isEmpty()) {
-            runDatesThatHadErrors(city);
+        try{
+            // Iterates through any dates that got an error so that we don't miss any
+            while(!flightsWithErrors.getTRAVEL_WEEKS().isEmpty()) {
+                runDatesThatHadErrors(city);
+            }
+        } catch(Exception e){
+            System.out.println("Error adding fligths with errors to DB");
         }
+
 
         // Adds the data saved in the arraylists to the actual database
         addFlightListToDB();

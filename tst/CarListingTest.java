@@ -38,6 +38,7 @@ public class CarListingTest {
     public static void setUp() {
         ChromeOptions option = new ChromeOptions();
         option.addArguments("--remote-allow-origins=*");
+        option.addArguments("--headless");
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver(option);

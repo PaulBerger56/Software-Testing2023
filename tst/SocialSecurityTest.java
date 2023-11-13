@@ -22,6 +22,7 @@ public class SocialSecurityTest {
     public static void setUp() {
         ChromeOptions option = new ChromeOptions();
         option.addArguments("--remote-allow-origins=*");
+        option.addArguments("--headless");
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver(option);
@@ -33,7 +34,7 @@ public class SocialSecurityTest {
         driver.get(CALC_SITE);
     }
 
-    @Ignore
+
     @Test
     @Parameters({"1990, 55000, 2141.00", "1980, 65000, 2322.00", "1970, 75000, 2391.00"})
     public void testDifferentAges(String birthYear, String earningsValue, String finalAmount){
@@ -123,12 +124,12 @@ public class SocialSecurityTest {
     manageable chunks with multi-threading
      */
     @Test
-    @Parameters({"306460, 306490"})
+    @Parameters({"300000, 306475"})
     public void testMaxBenefitWithLoop(int min, int max){
         int salaryCap = min;
         HashMap<Integer, Double> salaryAndBenefit = new HashMap<>();
 
-        for(int i = min; i <= max; i++){
+        for(int i = min; i <= max; i+= 1000){
             driver.get(CALC_SITE);
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
 
@@ -156,9 +157,10 @@ public class SocialSecurityTest {
             if(salaryAndBenefit.get(i) > salaryAndBenefit.get(salaryCap)){
                 System.out.println("There was a jump in benefits from $" + salaryCap + " and $" + i);
                 salaryCap = i;
-                System.out.println("The new salary with max benefit is $" + i + ": " + salaryAndBenefit.get(i));
+                System.out.println("The new salary with max benefit is $" + i + ": $" + salaryAndBenefit.get(i));
             }
         }
+        System.out.println("The salary with the max benefit is $" + salaryCap + ": $" + salaryAndBenefit.get(salaryCap));
     }
 
     /**

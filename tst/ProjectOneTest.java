@@ -1,7 +1,7 @@
 import Project.DateHolder;
 import Project.Flight;
 import Project.Week;
-import com.beust.ah.A;
+import java.sql.*;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -19,7 +19,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.NoSuchElementException;
 
 import java.security.Key;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +37,7 @@ public class ProjectOneTest {
     private static final String EXPEDIA = "https://www.expedia.com/?afmcid=nav.exp.mis.expedia";
     private static ArrayList<Flight> flightList;
     private static DateHolder flightsWithErrors;
+    private static Connection connection;
 
     @BeforeClass
     public static void setUp() {
@@ -48,21 +53,19 @@ public class ProjectOneTest {
         startingDateHolder = new DateHolder();
         startingDateHolder.fillTravelWeeks();
         flightsWithErrors = new DateHolder();
+
+        try {
+            connection = DriverManager.getConnection("jdbc:sqlite:flights.db");
+            initializeDatabase();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Ignore
-    @Test
-    public void siteTest() {
-        driver.get(EXPEDIA);
-        WebElement flightButton = driver.findElement(By.cssSelector("#multi-product-search-form-1 > div > div > div.uitk-tabs-container > ul > li:nth-child(2) > a"));
-        flightButton.click();
-    }
-
+    // THIS IS THE MAIN TEST!!!!!!!!!
     @Test
     @Parameters({"Cancun", "Las Vegas", "Denver", "Rome", "Milan", "Paris", "Madrid", "Amsterdam", "Singapore"})
     public void mainProjectTest(String city) throws InterruptedException {
-
-
         mainPageActions(city);
 
         for (Flight f : flightList) {
@@ -73,15 +76,13 @@ public class ProjectOneTest {
             runDatesThatHadErrors(city);
         }
 
-        // Add the data from flightlist to the database here
-
-        // clear flightlist before moving on to the next city
+        addFlightListToDB();
     }
 
     public void mainPageActions(String city) {
         ArrayList<Week> dates = startingDateHolder.getTRAVEL_WEEKS();
 
-        for(int i = 0; i < dates.size(); i++) {
+        for(int i = 0; i < 3; i++) {
             System.out.println("Current number of flights on the flightlist: " + flightList.size());
             System.out.println("Current number of flights on the error list: " + flightsWithErrors.getTRAVEL_WEEKS().size());
             System.out.println("Scanning for flights from Atlanta to " + city + " from " + dates.get(i).getFIRST_MONTH() + " " + dates.get(i).getFIRST_DAY() + " to " +
@@ -318,11 +319,6 @@ public class ProjectOneTest {
                 flightList.add(new Flight(airline,"Atlanta", destination, leavingDate,  returnDate, isNonStop, price));
              }
         }
-
-//        for(Flight f: flightList) {
-//            System.out.println(f.toString());
-//        }
-        System.out.println("Total flights in the error list: " + flightsWithErrors.getTRAVEL_WEEKS().size());
     }
 
     private boolean isElementPresentByClassName(WebElement element, String elementName) {
@@ -331,7 +327,6 @@ public class ProjectOneTest {
             } catch (NoSuchElementException e) {
                 return false;
             }
-
         return true;
     }
 
@@ -341,20 +336,60 @@ public class ProjectOneTest {
         } catch (NoSuchElementException e) {
             return false;
         }
-
         return true;
     }
 
-    // used to make sure the Dateholder, Month, and Week classes are working properly
-    @Ignore
-    @Test
-    public void dateHolderTester(){
-        DateHolder dh = new DateHolder();
-        ArrayList<Week> weeks = dh.getTRAVEL_WEEKS();
+    private static void initializeDatabase() throws SQLException {
+        Statement statement = connection.createStatement();
+        statement.execute(
+                "CREATE TABLE IF NOT EXISTS flights (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        "airline TEXT," +
+                        "departure_city TEXT," +
+                        "destination_city TEXT," +
+                        "departure_date TEXT," +
+                        "return_date TEXT," +
+                        "price INTEGER," +
+                        "nonstop TEXT," +
+                        "retrieval_time TEXT)"
+        );
+        statement.close();
+    }
 
-        for(Week w: weeks){
-            System.out.println(w.toString());
+    public void addFlightListToDB() {
+        for(Flight f: flightList) {
+            String priceString = f.getPRICE().replace("$", "").replace(",","");
+            int price = Integer.parseInt(priceString);
+
+            try(PreparedStatement preparedStatement = connection.prepareStatement(
+                    "INSERT INTO flights (airline, departure_city, destination_city, departure_date," +
+                            "return_date, price, nonstop, retrieval_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            )) {
+                preparedStatement.setString(1, f.getAIRLINE());
+                preparedStatement.setString(2, f.getDEPARTURE_CITY());
+                preparedStatement.setString(3, f.getARRIVAL_CITY());
+                preparedStatement.setString(4, f.getLEAVING_DATE());
+                preparedStatement.setString(5, f.getRETURN_DATE());
+                preparedStatement.setInt(6, price);
+                preparedStatement.setString(7, String.valueOf(f.isNONSTOP()));
+                preparedStatement.setString(8, getCurrentTime());
+                preparedStatement.executeUpdate();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
+        flightList.clear();
+    }
+
+    // Gets the current date and time to add into the database
+    public String getCurrentTime() {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDateTime = currentDateTime.format(formatter);
+
+        return formattedDateTime;
     }
 
     @AfterClass

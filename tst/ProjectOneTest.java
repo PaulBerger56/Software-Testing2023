@@ -82,7 +82,7 @@ public class ProjectOneTest {
     public void mainPageActions(String city) {
         ArrayList<Week> dates = startingDateHolder.getTRAVEL_WEEKS();
 
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < dates.size(); i++) {
             System.out.println("Current number of flights on the flightlist: " + flightList.size());
             System.out.println("Current number of flights on the error list: " + flightsWithErrors.getTRAVEL_WEEKS().size());
             System.out.println("Scanning for flights from Atlanta to " + city + " from " + dates.get(i).getFIRST_MONTH() + " " + dates.get(i).getFIRST_DAY() + " to " +

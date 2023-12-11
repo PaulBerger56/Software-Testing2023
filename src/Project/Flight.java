@@ -51,6 +51,6 @@ public class Flight {
     @Override
     public String toString(){
         return "Airline: " + this.AIRLINE + "; Departure City: " + this.DEPARTURE_CITY + "; Destination: " + this.ARRIVAL_CITY + "; " +
-                "Departure Date: " + this.LEAVING_DATE + "; Return Date: " + this.RETURN_DATE + "; Price: " + this.PRICE + "; Nonstop: " + this.NONSTOP;
+                "Departure Date: " + this.LEAVING_DATE + "; Return Date: " + this.RETURN_DATE + "; Price: $" + this.PRICE + "; Nonstop: " + this.NONSTOP;
     }
 }
